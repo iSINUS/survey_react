@@ -64,23 +64,20 @@ class SurveyEditor extends Component {
       var surveyInstance
       var surveyHash = ''
 
-      this.state.ipfs.add(Buffer.from(this.editor.text), function (err, res) {
-        if (err || !res) {
-          return console.error('ipfs add error', err, res)
-        }
-    
-        res.forEach(function (file) {
-          if (file && file.hash) {
-            console.log('successfully stored', file.hash)
-            surveyHash = file.hash.toString()
-          }
-        })
-      })
-
       this.state.web3.eth.getAccounts((error, accounts) => {
         this.survey.deployed().then((instance) => {
           surveyInstance = instance
   
+          return this.state.ipfs.add(Buffer.from(this.editor.text))
+        }).then((result) => {
+
+          result.forEach(function (file) {
+            if (file && file.hash) {
+              console.log('successfully stored', file.hash)
+              surveyHash = file.hash.toString()
+            }
+          })
+
           return surveyInstance.setSurvey(surveyHash, {from: accounts[0], gas: 1000000})
         }).then((result) => {
 
